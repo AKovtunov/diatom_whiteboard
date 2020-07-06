@@ -24,6 +24,10 @@ app.use((req, res, next) => {
   next();
 });
 
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'client/build')));
+
 app.get("/", (req, res) => {
   res.send("Server is working...");
 });
