@@ -8746,10 +8746,9 @@ react-scripts@3.4.1:
   optionalDependencies:
     fsevents "2.1.2"
 
-react-sketch@0.5.1:
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/react-sketch/-/react-sketch-0.5.1.tgz#71a4f619cade9495b6baead4e7a4741952717579"
-  integrity sha512-a0BPc6z/Ec/7KN4KL/HGLfAhDfLyaBN8GDvILfBZVX74PnhWvJocofc/cHSCvtNtEmGSdmJPjrewfAUXKo78pA==
+react-sketch@AKovtunov/react-sketch#add-custom-id-and-objects:
+  version "0.5.6"
+  resolved "https://codeload.github.com/AKovtunov/react-sketch/tar.gz/aa93ee664c1648af8a8bd9aea58cc5d412761e05"
   dependencies:
     prop-types "^15.6.2"
     react "^16.6.1"
