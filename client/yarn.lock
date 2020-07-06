@@ -8829,7 +8829,7 @@ react-scripts@3.4.1:
 
 "react-sketch@https://github.com/akovtunov/react-sketch.git#add-custom-id-and-objects":
   version "0.5.8"
-  resolved "https://github.com/akovtunov/react-sketch.git#7191e83e24d23402002ea46e7152a65363a2bdbb"
+  resolved "https://github.com/akovtunov/react-sketch.git#218e252a195327cfde0819de95b3003040bed81d"
   dependencies:
     prop-types "^15.6.2"
     react "^16.6.1"
