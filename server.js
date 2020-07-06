@@ -28,9 +28,9 @@ app.use((req, res, next) => {
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'client/build')));
 
-app.get("/", (req, res) => {
-  res.send("Server is working...");
-});
+// app.get("/", (req, res) => {
+//   res.send("Server is working...");
+// });
 
 app.post("/pusher/auth", (req, res) => {
   const socketId = req.body.socket_id;
