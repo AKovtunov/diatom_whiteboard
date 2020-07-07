@@ -1,6 +1,7 @@
 import React, { Component, createRef } from 'react';
 import {SketchField, Tools} from 'react-sketch';
 import shortid from 'shortid'; // for generating unique IDs
+import { FaMousePointer, FaPen, FaCircle, FaSquare, FaTrash } from 'react-icons/fa';
 
 class Whiteboard extends Component {
 
@@ -8,6 +9,7 @@ class Whiteboard extends Component {
     text: '',
     myUsername: '',
     tool: Tools.Pencil,
+    penWidth: 3,
     messages: []
   }
 
@@ -21,22 +23,22 @@ class Whiteboard extends Component {
     this.tools = [
       {
        name: 'select',
-       icon: '<FaMousePointer />',
+       icon: <FaMousePointer />,
        tool: Tools.Select
       },
       {
        name: 'pencil',
-       icon: '<FaPen />',
+       icon: <FaPen />,
        tool: Tools.Pencil
       },
       {
        name: 'rect',
-       icon: '<FaSquare />',
+       icon: <FaSquare />,
        tool: Tools.Rectangle
       },
       {
        name: 'circle',
-       icon: '<FaCircle />',
+       icon: <FaCircle />,
        tool: Tools.Circle
       }
    ];
@@ -86,6 +88,10 @@ class Whiteboard extends Component {
     });
   }
 
+  handlePenWidthChange = (event) => {
+    this.setState({penWidth: event.target.value});
+  }
+
   render() {
     return (
       <div>
@@ -96,11 +102,19 @@ class Whiteboard extends Component {
           height='768px'
           tool={this.state.tool}
           lineColor={this.props.usercolor}
-          lineWidth={3}
+          lineWidth={this.state.penWidth}
           onUpdate={this.sketchUpdated}
           username='xx'
           shortid={shortid} />
         {this.renderTools()}
+        {this.state.penWidth}
+        <input
+          id="typeinp"
+          type="range"
+          min="1" max="25"
+          value={this.state.penWidth}
+          onChange={this.handlePenWidthChange}
+          step="1"/>
       </div>
     )
   }
@@ -116,7 +130,7 @@ class Whiteboard extends Component {
             data-name={tool.name}
             data-tool={tool.tool}
           >
-            {tool.name}
+            {tool.icon}
           </button>
         </div>
       );

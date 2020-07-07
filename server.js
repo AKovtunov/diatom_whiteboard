@@ -14,7 +14,8 @@ const pusher = new Pusher({
   cluster: 'eu',
 });
 
-const clients = {};
+let clients = {};
+let channel = "";
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -37,7 +38,7 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 
 app.post("/pusher/auth", (req, res) => {
   const socketId = req.body.socket_id;
-  const channel = req.body.channel_name;
+  channel = req.body.channel_name;
   console.log("authing...");
   var auth = pusher.authenticate(socketId, channel);
   return res.send(auth);
@@ -62,3 +63,12 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });
+
+(function(){
+  console.log("Refreshing clients list")
+  clients = {}
+  if (channel) {
+    pusher.trigger(channel, 'clients-refreshed', {})
+  }
+  setTimeout(arguments.callee, 60000);
+})();

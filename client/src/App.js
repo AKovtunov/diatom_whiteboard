@@ -21,23 +21,13 @@ class App extends Component {
     this.state = {
       clients: {}
     }
-    // this.pusher = new Pusher({
-    //   appId: process.env.PUSHER_APP_ID,
-    //   key: process.env.PUSHER_KEY,
-    //   secret: process.env.PUSHER_SECRET,
-    //   cluster: 'eu',
-    // });
-    // Enable pusher logging - don't include this in production
-    // Pusher.logToConsole = true;
 
-    console.log(process.env)
-    console.log(process.env.REACT_APP_PUSHER_APP_KEY)
     this.pusher = new Pusher(process.env.REACT_APP_PUSHER_APP_KEY, {
       authEndpoint: `/pusher/auth`,
       cluster: process.env.REACT_APP_PUSHER_APP_CLUSTER,
       encrypted: true
     });
-    console.log(`private-group-${channel_name}`)
+
     this.group_channel = this.pusher.subscribe(`private-group-${channel_name}`);
     this.group_channel.bind("pusher:subscription_error", (status) => {
       console.log("error subscribing to group channel: ", status);
@@ -58,6 +48,28 @@ class App extends Component {
           .catch((error) => {
             console.error(error);
           });
+    });
+
+    this.group_channel.bind("clients-refreshed", () => {
+      console.log("Refreshed clients list, subscribing back")
+      console.log(`My name is ${username} and color is ${usercolor}`)
+      const requestOptions = {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username, usercolor: usercolor })
+      };
+      fetch('/clients', requestOptions)
+          .then((response) => response.json())
+          .then((data) => {
+            this.setState({ clients: data })
+            console.log("state updated")
+            console.log(data)
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+          console.log("state is:")
+          console.log(this.state.clients)
     });
 
   }
