@@ -14,6 +14,8 @@ const pusher = new Pusher({
   cluster: 'eu',
 });
 
+const clients = {};
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use((req, res, next) => {
@@ -39,6 +41,18 @@ app.post("/pusher/auth", (req, res) => {
   console.log("authing...");
   var auth = pusher.authenticate(socketId, channel);
   return res.send(auth);
+});
+
+app.post("/clients", (req, res) => {
+  if (!clients[req.body.username]){
+    clients[req.body.username] = req.body.usercolor
+  }
+  console.log(clients)
+  return res.send(clients);
+});
+
+app.get("/clients", (req, res) => {
+  return res.send(clients);
 });
 
 app.get('*', (req, res) => {

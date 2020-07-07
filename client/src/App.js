@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import Whiteboard from './components/Whiteboard';
+import UserList from './components/UserList';
 import Pusher from "pusher-js";
 import shortid from 'shortid'; // for generating unique IDs
 import Faker from 'faker'
@@ -14,12 +15,12 @@ const usercolor = Faker.internet.color();
 
 class App extends Component {
 
-  state = {
-    clients: new Set()
-  }
-
   constructor(props){
     super(props);
+
+    this.state = {
+      clients: {}
+    }
     // this.pusher = new Pusher({
     //   appId: process.env.PUSHER_APP_ID,
     //   key: process.env.PUSHER_KEY,
@@ -48,12 +49,37 @@ class App extends Component {
     });
 
     this.group_channel.bind("client-subscribed", (data) => {
-      console.log("new client joined");
-      let clients = this.state.clients
-      clients.add(data)
-      this.setState({clients: clients})
+      console.log("client list updated");
+      fetch('/clients')
+          .then((response) => response.json())
+          .then((data) => {
+            this.setState({ clients: data })
+          })
+          .catch((error) => {
+            console.error(error);
+          });
     });
 
+  }
+
+  async componentDidMount() {
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username, usercolor: usercolor })
+    };
+    fetch('/clients', requestOptions)
+        .then((response) => response.json())
+        .then((data) => {
+          this.setState({ clients: data })
+          console.log("state updated")
+          console.log(data)
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+        console.log("state is:")
+        console.log(this.state.clients)
   }
 
   render() {
@@ -67,12 +93,7 @@ class App extends Component {
 
             <ul className="list-unstyled components">
               <p>Color Guide</p>
-              <li>
-                <div className="user" style={{background: usercolor}}>{username}</div>
-              </li>
-              <li>
-                <div className="user">Guest</div>
-              </li>
+              <UserList clients={this.state.clients} me={username}/>
             </ul>
           </nav>
           <div className="col-md-9 col-lg-10 d-md-block bg-light">
