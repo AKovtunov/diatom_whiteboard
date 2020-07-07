@@ -15,8 +15,8 @@ class Whiteboard extends Component {
     super(props);
     this.auto_create_tools = ['circle', 'rect'];
     this.initial_objects = {
-      'circle': { radius: 75, fill: 'transparent', stroke: '#000', strokeWidth: 3, top: 60, left: 500 },
-      'rect': { width: 100, height: 50, fill: 'transparent', stroke: '#000', strokeWidth: 3, top: 100, left: 330 },
+      'circle': { radius: 75, fill: 'transparent', stroke: this.props.usercolor, strokeWidth: 3, top: 60, left: 500 },
+      'rect': { width: 100, height: 50, fill: 'transparent', stroke: this.props.usercolor, strokeWidth: 3, top: 100, left: 330 },
     }
     this.tools = [
       {
@@ -50,10 +50,13 @@ class Whiteboard extends Component {
 
     let textGatherer = this._gatherText();
 
+    //
     this.props.group_channel.bind('client-whiteboard-updated', (payload) => {
       textGatherer(payload.data);
+      console.log(payload.is_final)
       console.log('whiteboard was updated')
       if (payload.is_final) {
+        console.log("FINAL PAYLOAD")
         const full_payload = textGatherer(); // get the gathered text
         let obj = '';
         if (full_payload) {
@@ -69,6 +72,8 @@ class Whiteboard extends Component {
         if (payload.action === 'add') {
           this._sketch.addObject(JSON.stringify(obj));
         } else if(payload.action === 'update') {
+          console.log("UPDATE TRIGGERED WITH")
+          console.log(obj)
           this._sketch.modifyObject(JSON.stringify(obj));
         } else if(payload.action === 'remove') {
           this._sketch.setSelected(payload.id);
@@ -154,10 +159,9 @@ class Whiteboard extends Component {
 
   sketchUpdated = (obj, action, sender, id = null) => {
     if (this.props.usercolor) {
-
+        console.log("Updating the sketch")
         let length_per_part = 8000; // maximum number of characters that can be alloted to a FabricJS object
         let loop_count = Math.ceil(obj.length / length_per_part);
-
         let from_str_index = 0;
         for (let x = 0; x < loop_count; x++) {
           const str_part = obj.substr(from_str_index, length_per_part);
@@ -166,7 +170,7 @@ class Whiteboard extends Component {
             action: action,
             id: id,
             data: str_part,
-            sender: this.state.usercolor
+            sender: sender
           };
 
           if (x + 1 === loop_count) { // if this is the final part
@@ -180,6 +184,7 @@ class Whiteboard extends Component {
   }
 
   updateOtherUsers = (payload) => {
+      console.log("Sending update to other users")
     this.props.group_channel.trigger('client-whiteboard-updated', payload);
   }
 }
