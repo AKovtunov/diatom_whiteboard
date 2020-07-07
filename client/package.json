@@ -11,6 +11,7 @@
     "bootstrap": "4.5.0",
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
+    "faker": "^4.1.0",
     "git": "^0.1.5",
     "pusher": "^2.0.0",
     "pusher-js": "^4.2.2",
