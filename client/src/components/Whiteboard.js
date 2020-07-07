@@ -11,6 +11,41 @@ class Whiteboard extends Component {
     messages: []
   }
 
+  constructor(props) {
+    super(props);
+    this.auto_create_tools = ['circle', 'rect'];
+    this.initial_objects = {
+      'circle': { radius: 75, fill: 'transparent', stroke: '#000', strokeWidth: 3, top: 60, left: 500 },
+      'rect': { width: 100, height: 50, fill: 'transparent', stroke: '#000', strokeWidth: 3, top: 100, left: 330 },
+    }
+    this.tools = [
+      {
+       name: 'select',
+       icon: '<FaMousePointer />',
+       tool: Tools.Select
+      },
+      {
+       name: 'pencil',
+       icon: '<FaPen />',
+       tool: Tools.Pencil
+      },
+      {
+       name: 'rect',
+       icon: '<FaSquare />',
+       tool: Tools.Rectangle
+      },
+      {
+       name: 'circle',
+       icon: '<FaCircle />',
+       tool: Tools.Circle
+      }
+   ];
+
+   this.auto_create_tools = ['circle', 'rect']; // tools that will automatically create their corresponding object when selected
+
+   // next: add settings for auto-created objects
+  }
+
   async componentDidMount() {
 
     let textGatherer = this._gatherText();
@@ -48,18 +83,66 @@ class Whiteboard extends Component {
 
   render() {
     return (
-      <SketchField
-        className="canvas"
-        ref={c => (this._sketch = c)}
-        width='1024px'
-        height='768px'
-        tool={this.state.tool}
-        lineColor={this.props.usercolor}
-        lineWidth={3}
-        onUpdate={this.sketchUpdated}
-        username='xx'
-        shortid={shortid} />
+      <div>
+        <SketchField
+          className="canvas"
+          ref={c => (this._sketch = c)}
+          width='1024px'
+          height='768px'
+          tool={this.state.tool}
+          lineColor={this.props.usercolor}
+          lineWidth={3}
+          onUpdate={this.sketchUpdated}
+          username='xx'
+          shortid={shortid} />
+        {this.renderTools()}
+      </div>
     )
+  }
+
+  renderTools = () => {
+    return this.tools.map((tool) => {
+      return (
+        <div className="tool" key={tool.name}>
+          <button
+            color="secondary"
+            size="lg"
+            onClick={this.pickTool}
+            data-name={tool.name}
+            data-tool={tool.tool}
+          >
+            {tool.name}
+          </button>
+        </div>
+      );
+    });
+  }
+
+  pickTool = (event) => {
+    const button = event.target.closest('button');
+    const tool = button.getAttribute('data-tool');
+    const tool_name = button.getAttribute('data-name');
+
+    this.setState({
+      tool
+    }, () => {
+      if(this.auto_create_tools.indexOf(tool_name) !== -1){
+
+        const obj = this.initial_objects[tool_name];
+        const id = shortid.generate();
+        Object.assign(obj, { id: id, type: tool_name });
+
+        this._sketch.addObject(JSON.stringify(obj));
+
+        setTimeout(() => {
+          this.setState({
+            tool: Tools.Select
+          });
+        }, 500);
+
+      }
+
+    });
   }
 
   _gatherText = () => {
