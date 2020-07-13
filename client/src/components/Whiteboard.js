@@ -92,6 +92,23 @@ class Whiteboard extends Component {
     this.setState({penWidth: event.target.value});
   }
 
+  onUpdateText = (event) => {
+    this.setState({
+      text: event.target.value
+    });
+  }
+
+  addText = () => {
+    if (this.state.text) {
+      const id = shortid.generate();
+      this._sketch.addText(this.state.text, { id }); // add a text object to the canvas
+
+      this.setState({
+        text: ''
+      });
+    }
+  }
+
   render() {
     return (
       <div>
@@ -115,6 +132,14 @@ class Whiteboard extends Component {
           value={this.state.penWidth}
           onChange={this.handlePenWidthChange}
           step="1"/>
+          <input
+            type="textarea"
+            name="text_to_add"
+            id="text_to_add"
+            placeholder="Enter text here"
+            value={this.state.text}
+            onChange={this.onUpdateText} />
+          <button type="button" color="primary" onClick={this.addText}>Add Text</button>
       </div>
     )
   }
