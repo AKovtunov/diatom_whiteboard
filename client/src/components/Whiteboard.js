@@ -1,7 +1,8 @@
 import React, { Component, createRef } from 'react';
 import {SketchField, Tools} from 'react-sketch';
-import shortid from 'shortid'; // for generating unique IDs
+import shortid from 'shortid';
 import { FaMousePointer, FaPen, FaCircle, FaSquare, FaTrash } from 'react-icons/fa';
+import Slider from 'react-color';
 
 class Whiteboard extends Component {
 
@@ -10,15 +11,17 @@ class Whiteboard extends Component {
     myUsername: '',
     tool: Tools.Pencil,
     penWidth: 3,
-    messages: []
+    messages: [],
+    color: this.props.usercolor
   }
 
   constructor(props) {
+    console.log('reinitializing whiteboard')
     super(props);
     this.auto_create_tools = ['circle', 'rect'];
     this.initial_objects = {
-      'circle': { radius: 75, fill: 'transparent', stroke: this.props.usercolor, strokeWidth: 3, top: 60, left: 500 },
-      'rect': { width: 100, height: 50, fill: 'transparent', stroke: this.props.usercolor, strokeWidth: 3, top: 100, left: 330 },
+      'circle': { radius: 75, fill: 'transparent', stroke: this.state.color, strokeWidth: 3, top: 60, left: 500 },
+      'rect': { width: 100, height: 50, fill: 'transparent', stroke: this.state.color, strokeWidth: 3, top: 100, left: 330 },
     }
     this.tools = [
       {
@@ -109,7 +112,15 @@ class Whiteboard extends Component {
     }
   }
 
+  handleChange = (color, event) => {
+    console.log(`Set color to ${color.hex}`)
+    this.setState({color: color.hex})
+  }
+
+
   render() {
+    console.log('rendering the SketchField in render()')
+    console.log(`our color is ${this.state.color}`)
     return (
       <div>
         <SketchField
@@ -118,7 +129,7 @@ class Whiteboard extends Component {
           width='1024px'
           height='768px'
           tool={this.state.tool}
-          lineColor={this.props.usercolor}
+          lineColor={this.state.color}
           lineWidth={this.state.penWidth}
           onUpdate={this.sketchUpdated}
           username='xx'
@@ -140,6 +151,10 @@ class Whiteboard extends Component {
             value={this.state.text}
             onChange={this.onUpdateText} />
           <button type="button" color="primary" onClick={this.addText}>Add Text</button>
+          <Slider
+            color={ this.state.color }
+            onChangeComplete={ this.handleChange }
+          />
       </div>
     )
   }
@@ -197,7 +212,7 @@ class Whiteboard extends Component {
   }
 
   sketchUpdated = (obj, action, sender, id = null) => {
-    if (this.props.usercolor) {
+    if (this.state.color) {
         console.log("Updating the sketch")
         let length_per_part = 8000; // maximum number of characters that can be alloted to a FabricJS object
         let loop_count = Math.ceil(obj.length / length_per_part);
