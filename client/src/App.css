@@ -16,3 +16,44 @@ body {
   background: #F0C987;
   color: white;
 }
+
+.logo-navbar {
+  margin: 20px;
+}
+
+.logo {
+  margin-left: 20px;
+}
+
+.container-fluid{
+  height: 100%;
+}
+
+.main-container {
+  margin: 10px;
+  min-height: 85%;
+  height: 85%;
+}
+
+.bottom-bar {
+  min-height: 5%;
+  height: 5%;
+}
+
+.whiteboard-container{
+  min-height: 100%;
+}
+.whiteboard{
+  min-height: 100%;
+}
+
+
+.tools{
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.tool{
+  flex: 1 0 18%;
+  margin-top: 10px;
+}

@@ -1,28 +1,30 @@
 import React, { Component, createRef } from 'react';
 import {SketchField, Tools} from 'react-sketch';
 import shortid from 'shortid';
-import { FaMousePointer, FaPen, FaCircle, FaSquare, FaTrash } from 'react-icons/fa';
-import Slider from 'react-color';
+import { FaMousePointer, FaPen, FaCircle, FaSquare, FaTrash, FaGripLines } from 'react-icons/fa';
+import MathSymbolList from './MathSymbolList';
 
 class Whiteboard extends Component {
 
   state = {
     text: '',
-    myUsername: '',
+    username: this.props.username,
+    dimensions: {
+      width: 200,
+      height: 200
+    },
     tool: Tools.Pencil,
     penWidth: 3,
     messages: [],
     color: this.props.usercolor
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.setState({ color: nextProps.usercolor });
+  }
+
   constructor(props) {
-    console.log('reinitializing whiteboard')
     super(props);
-    this.auto_create_tools = ['circle', 'rect'];
-    this.initial_objects = {
-      'circle': { radius: 75, fill: 'transparent', stroke: this.state.color, strokeWidth: 3, top: 60, left: 500 },
-      'rect': { width: 100, height: 50, fill: 'transparent', stroke: this.state.color, strokeWidth: 3, top: 100, left: 330 },
-    }
     this.tools = [
       {
        name: 'select',
@@ -43,42 +45,47 @@ class Whiteboard extends Component {
        name: 'circle',
        icon: <FaCircle />,
        tool: Tools.Circle
+      },
+      {
+       name: 'line',
+       icon: <FaGripLines />,
+       tool: Tools.Line
       }
    ];
-
-   this.auto_create_tools = ['circle', 'rect']; // tools that will automatically create their corresponding object when selected
-
-   // next: add settings for auto-created objects
   }
 
   async componentDidMount() {
+    this.setState({
+      dimensions: {
+        width: this.container.offsetWidth,
+        height: this.container.offsetHeight,
+      },
+    });
 
     let textGatherer = this._gatherText();
 
-    //
     this.props.group_channel.bind('client-whiteboard-updated', (payload) => {
       textGatherer(payload.data);
-      console.log(payload.is_final)
-      console.log('whiteboard was updated')
       if (payload.is_final) {
-        console.log("FINAL PAYLOAD")
         const full_payload = textGatherer(); // get the gathered text
         let obj = '';
         if (full_payload) {
           obj = JSON.parse(full_payload);
-
+          console.log("Object received by users")
+          console.log(obj)
           if (payload.id) {
             Object.assign(obj, { id: payload.id, sender: payload.sender });
           } else {
             Object.assign(obj, { sender: payload.sender });
           }
+
+          console.log("Object after parsing")
+          console.log(JSON.stringify(obj))
         }
 
         if (payload.action === 'add') {
           this._sketch.addObject(JSON.stringify(obj));
         } else if(payload.action === 'update') {
-          console.log("UPDATE TRIGGERED WITH")
-          console.log(obj)
           this._sketch.modifyObject(JSON.stringify(obj));
         } else if(payload.action === 'remove') {
           this._sketch.setSelected(payload.id);
@@ -92,7 +99,14 @@ class Whiteboard extends Component {
   }
 
   handlePenWidthChange = (event) => {
-    this.setState({penWidth: event.target.value});
+    this.setState({penWidth: parseInt(event.target.value)});
+    let tool = this.state.tool
+    this.setState({
+      tool: Tools.Line
+    });
+    this.setState({
+      tool: tool
+    });
   }
 
   onUpdateText = (event) => {
@@ -112,69 +126,77 @@ class Whiteboard extends Component {
     }
   }
 
-  handleChange = (color, event) => {
-    console.log(`Set color to ${color.hex}`)
-    this.setState({color: color.hex})
-  }
-
 
   render() {
-    console.log('rendering the SketchField in render()')
-    console.log(`our color is ${this.state.color}`)
     return (
-      <div>
-        <SketchField
-          className="canvas"
-          ref={c => (this._sketch = c)}
-          width='1024px'
-          height='768px'
-          tool={this.state.tool}
-          lineColor={this.state.color}
-          lineWidth={this.state.penWidth}
-          onUpdate={this.sketchUpdated}
-          username='xx'
-          shortid={shortid} />
-        {this.renderTools()}
-        {this.state.penWidth}
-        <input
-          id="typeinp"
-          type="range"
-          min="1" max="25"
-          value={this.state.penWidth}
-          onChange={this.handlePenWidthChange}
-          step="1"/>
+      <div className="row whiteboard-container">
+        <div className="whiteboard col-md-9 col-lg-10" ref={el => (this.container = el)}>
+          <SketchField
+            className="canvas"
+            ref={c => (this._sketch = c)}
+            width={ this.state.dimensions.width }
+            height={ this.state.dimensions.height }
+            tool={this.state.tool}
+            lineColor={this.state.color}
+            lineWidth={this.state.penWidth}
+            onUpdate={this.sketchUpdated}
+            username={this.state.username}
+            shortid={shortid} />
+        </div>
+        <div className="col-md-3 col-lg-2">
+          <h5>Select Tool:</h5>
+          {this.renderTools()}
+          <h5>Pen Width:</h5>
           <input
-            type="textarea"
+            id="typeinp"
+            type="range"
+            min="1" max="25"
+            value={this.state.penWidth}
+            onChange={this.handlePenWidthChange}
+            step="1"/>
+          {this.state.penWidth}
+          <h5>Add Text:</h5>
+          <textarea
             name="text_to_add"
             id="text_to_add"
             placeholder="Enter text here"
             value={this.state.text}
             onChange={this.onUpdateText} />
           <button type="button" color="primary" onClick={this.addText}>Add Text</button>
-          <Slider
-            color={ this.state.color }
-            onChangeComplete={ this.handleChange }
-          />
+          <h5>Math Symbols:</h5>
+          <MathSymbolList />
+        </div>
       </div>
     )
   }
 
   renderTools = () => {
-    return this.tools.map((tool) => {
-      return (
-        <div className="tool" key={tool.name}>
-          <button
-            color="secondary"
-            size="lg"
-            onClick={this.pickTool}
-            data-name={tool.name}
-            data-tool={tool.tool}
-          >
-            {tool.icon}
-          </button>
-        </div>
-      );
-    });
+    return <div className="tools">{
+      this.tools.map((tool) => {
+        return (
+          <div className="tool" key={tool.name}>
+            <button
+              color="secondary"
+              size="lg"
+              onClick={this.pickTool}
+              data-name={tool.name}
+              data-tool={tool.tool}
+            >
+              {tool.icon}
+            </button>
+          </div>
+        );
+      })}
+      <div className="tool" key="remove">
+        <button
+          color="danger"
+          size="lg"
+          onClick={this.removeSelected}
+        >
+          <FaTrash />
+        </button>
+      </div>
+    </div>
   }
 
   pickTool = (event) => {
@@ -184,24 +206,34 @@ class Whiteboard extends Component {
 
     this.setState({
       tool
-    }, () => {
-      if(this.auto_create_tools.indexOf(tool_name) !== -1){
-
-        const obj = this.initial_objects[tool_name];
-        const id = shortid.generate();
-        Object.assign(obj, { id: id, type: tool_name });
-
-        this._sketch.addObject(JSON.stringify(obj));
-
-        setTimeout(() => {
-          this.setState({
-            tool: Tools.Select
-          });
-        }, 500);
-
-      }
-
     });
+  }
+
+  removeSelected = () => {
+    const activeObj = this._sketch.getSelected();
+    let id;
+    if (activeObj._objects) {
+      activeObj._objects.map((obj) =>{
+        const payload = {
+          action: 'remove',
+          is_final: true,
+          id: obj.id,
+          sender: this.state.username
+        };
+        this.updateOtherUsers(payload);
+      })
+
+    } else {
+      const payload = {
+        action: 'remove',
+        is_final: true,
+        id: activeObj.id,
+        sender: this.state.username
+      };
+      this.updateOtherUsers(payload);
+    }
+
+    this._sketch.removeSelected(); // remove the object from the user's canvas
   }
 
   _gatherText = () => {
@@ -212,10 +244,13 @@ class Whiteboard extends Component {
   }
 
   sketchUpdated = (obj, action, sender, id = null) => {
+    console.log("Sketch updated")
     if (this.state.color) {
-        console.log("Updating the sketch")
         let length_per_part = 8000; // maximum number of characters that can be alloted to a FabricJS object
+        console.log("Object received by sketch")
+        console.log(obj)
         let loop_count = Math.ceil(obj.length / length_per_part);
+        console.log(`loop_count = ${loop_count}`)
         let from_str_index = 0;
         for (let x = 0; x < loop_count; x++) {
           const str_part = obj.substr(from_str_index, length_per_part);
@@ -230,6 +265,8 @@ class Whiteboard extends Component {
           if (x + 1 === loop_count) { // if this is the final part
             Object.assign(payload, { is_final: true });
           }
+          console.log("Payload is:")
+          console.log(payload)
 
           this.updateOtherUsers(payload);
           from_str_index += length_per_part;
@@ -238,7 +275,6 @@ class Whiteboard extends Component {
   }
 
   updateOtherUsers = (payload) => {
-      console.log("Sending update to other users")
     this.props.group_channel.trigger('client-whiteboard-updated', payload);
   }
 }
