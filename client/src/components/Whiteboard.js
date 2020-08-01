@@ -16,7 +16,8 @@ class Whiteboard extends Component {
     tool: Tools.Pencil,
     penWidth: 3,
     messages: [],
-    color: this.props.usercolor
+    color: this.props.usercolor,
+    imageUrl: 'https://thumbs.dreamstime.com/z/%D0%B4%D0%B5%D0%BA%D0%B0%D1%80%D1%82%D0%BE%D0%B2%D1%8B%D0%B9-%D1%88%D0%B0%D0%B1-%D0%BE%D0%BD-%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D1%8B-%D0%BA%D0%BE%D0%BE%D1%80-%D0%B8%D0%BD%D0%B0%D1%82-67755917.jpg'
   }
 
   componentWillReceiveProps(nextProps) {
@@ -84,8 +85,11 @@ class Whiteboard extends Component {
         }
 
         if (payload.action === 'add') {
+          console.log("whiteboard - add")
           this._sketch.addObject(JSON.stringify(obj));
         } else if(payload.action === 'update') {
+          console.log("whiteboard - modify")
+          console.log(obj)
           this._sketch.modifyObject(JSON.stringify(obj));
         } else if(payload.action === 'remove') {
           this._sketch.setSelected(payload.id);
@@ -102,10 +106,7 @@ class Whiteboard extends Component {
     this.setState({penWidth: parseInt(event.target.value)});
     let tool = this.state.tool
     this.setState({
-      tool: Tools.Line
-    });
-    this.setState({
-      tool: tool
+      tool
     });
   }
 
@@ -165,6 +166,21 @@ class Whiteboard extends Component {
           <button type="button" color="primary" onClick={this.addText}>Add Text</button>
           <h5>Math Symbols:</h5>
           <MathSymbolList />
+          <h5>Add Image: </h5>
+          <input
+            type='text'
+            label='Image URL'
+            helperText='Copy/Paste an image URL'
+            onChange={(e) => this.setState({ imageUrl: e.target.value })}
+            value={this.state.imageUrl}/>
+          <button
+            type="button"
+            variant="outlined"
+            onClick={(e) => {
+              this._sketch.addImg(this.state.imageUrl)
+            }}>
+            Load Image from URL
+          </button>
         </div>
       </div>
     )
@@ -203,7 +219,6 @@ class Whiteboard extends Component {
     const button = event.target.closest('button');
     const tool = button.getAttribute('data-tool');
     const tool_name = button.getAttribute('data-name');
-
     this.setState({
       tool
     });
