@@ -111,7 +111,7 @@ class App extends Component {
             </div>
 
             <ul className="list-unstyled components">
-              <p>Color Guide</p>
+              <h5>Color Guide</h5>
               <UserList clients={this.state.clients} me={username}/>
             </ul>
           </nav>
